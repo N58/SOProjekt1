@@ -49,10 +49,11 @@ int search(node* head, char* fileName)
 node* removeNode(node* head, char* fileName)
 {
     node *tmp = head;
-    while(tmp && strcmp(fileName, tmp->fileName) == 0)
+    if(tmp && strcmp(fileName, tmp->fileName) == 0)
     {
+        head = head->next;
         free(tmp);
-        return NULL;
+        return head;
     }
     while(tmp && tmp->next)
     {
