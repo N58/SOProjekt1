@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "linkedList.h"
 #include "copy.h"
-#include "dirChecker"
+#include "dirChecker.h"
 
 typedef struct directory
 {
@@ -17,8 +17,7 @@ typedef struct directory
     node *file_list;
 } directory;
 
-
-void checkDirectories(char *source_patch, chat *target_patch)
+void checkDirectories(char *source_patch, char *target_patch)
 {
     directory source_dir;
     directory target_dir;
@@ -28,8 +27,8 @@ void checkDirectories(char *source_patch, chat *target_patch)
     struct stat st;
     char *fileName;
 
-    source_dir.path = argv[1];
-    target_dir.path = argv[2];
+    source_dir.path = source_patch;
+    target_dir.path = target_patch;
     source_dir.pointer = opendir(source_dir.path);
     target_dir.pointer = opendir(target_dir.path);
     source_dir.file_list = NULL;
