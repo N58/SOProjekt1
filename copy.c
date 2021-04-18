@@ -8,7 +8,7 @@
 #include <string.h>
 #include "copy.h"
 
-void copy(char* sourceName, char* targetName)
+void copy(char* sourceName, char* targetName, mode_t mode)
 {
 	int i, sourceFile, targetFile;
 	size_t bytes_read, bytes_write;
@@ -21,7 +21,7 @@ void copy(char* sourceName, char* targetName)
 		exit(EXIT_FAILURE);
 	}
 	
-	targetFile = open(targetName, O_WRONLY | O_CREAT | O_TRUNC, 0777);
+	targetFile = open(targetName, O_WRONLY | O_CREAT | O_TRUNC, mode);
 	if(targetFile == -1)
 	{
 		perror("Error opening file");

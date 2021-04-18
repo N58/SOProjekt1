@@ -83,20 +83,20 @@ void checkDirectories(char *source_patch, char *target_patch)
                 {
                     if(source_f.st_mtime > target_f.st_mtime)
                     {
-                        copy(sourcef_path, targetf_path);
+                        copy(sourcef_path, targetf_path, source_f.st_mode);
                     }
                 }
                 else
                 {
-                    //do zrobienia
+                    //do zrobienia usuń i skopiuj myślę tak
                     exit(EXIT_FAILURE);
                 }
             }
             else
             {
-                copy(sourcef_path, targetf_path);
+                copy(sourcef_path, targetf_path, source_f.st_mode);
             }
-            modify_time.actime = source_f.st_atim;
+            modify_time.actime = source_f.st_atime;
             modify_time.modtime = source_f.st_mtime;
             utime(targetf_path, &modify_time);
         }
