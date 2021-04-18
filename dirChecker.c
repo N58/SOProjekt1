@@ -81,16 +81,17 @@ void checkDirectories(char *source_patch, char *target_patch)
                 lstat(targetf_path, &target_f);
                 if(source_f.st_mode == target_f.st_mode)
                 {
-                    if(source_f.st_mtime > target_f.st_mtime)
+                    if(source_f.st_mtime != target_f.st_mtime)
                     {
                         copy(sourcef_path, targetf_path, source_f.st_mode);
                     }
                 }
                 else
                 {
-                    //do zrobienia usuń i skopiuj myślę tak
-                    exit(EXIT_FAILURE);
+                    unlink(targetf_path);
+                    copy(sourcef_path, targetf_path, source_f.st_mode);
                 }
+                target_dir.file_list = removeNode(target_dir.file_list, fileName);
             }
             else
             {
@@ -104,7 +105,8 @@ void checkDirectories(char *source_patch, char *target_patch)
     }
     while (target_dir.file_list)
     {
-        //usun co zostalo
-        break;
+        strncpy(targetf_path + targetf_path_len, target_dir.file_list->fileName, sizeof(targetf_path) - targetf_path_len);
+        unlink(targetf_path);
+        target_dir.file_list = pop(target_dir.file_list);
     }
 }
