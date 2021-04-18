@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <utime.h>
+#include <time.h>
 #include "linkedList.h"
 #include "copy.h"
 #include "dirChecker.h"
@@ -24,8 +26,9 @@ void checkDirectories(char *source_patch, char *target_patch)
     char sourcef_path[PATH_MAX + 1];
     char targetf_path[PATH_MAX + 1];
     struct dirent *entry;
-    struct stat st;
+    struct stat source_f, target_f;
     char *fileName;
+    struct utimbuf modify_time;
 
     source_dir.path = source_patch;
     target_dir.path = target_patch;
@@ -69,23 +72,39 @@ void checkDirectories(char *source_patch, char *target_patch)
     {
         fileName = source_dir.file_list->fileName;
         strncpy(sourcef_path + sourcef_path_len, fileName, sizeof(sourcef_path) - sourcef_path_len);
-        lstat(sourcef_path, &st);
-        if (S_ISREG(st.st_mode))
+        lstat(sourcef_path, &source_f);
+        if (S_ISREG(source_f.st_mode))
         {
             strncpy(targetf_path + targetf_path_len, fileName, sizeof(targetf_path) - targetf_path_len);
             if(search(target_dir.file_list, fileName) == 0)
             {
-                copy(sourcef_path, targetf_path);
+                lstat(targetf_path, &target_f);
+                if(source_f.st_mode == target_f.st_mode)
+                {
+                    if(source_f.st_mtime > target_f.st_mtime)
+                    {
+                        copy(sourcef_path, targetf_path);
+                    }
+                }
+                else
+                {
+                    //do zrobienia
+                    exit(EXIT_FAILURE);
+                }
             }
             else
             {
                 copy(sourcef_path, targetf_path);
             }
+            modify_time.actime = source_f.st_atim;
+            modify_time.modtime = source_f.st_mtime;
+            utime(targetf_path, &modify_time);
         }
         source_dir.file_list = pop(source_dir.file_list);
     }
     while (target_dir.file_list)
     {
         //usun co zostalo
+        break;
     }
 }

@@ -8,6 +8,7 @@
 #include <syslog.h>
 #include <string.h>
 #include <signal.h>
+#include "dirChecker.h"
 
 #define DEFAULT_TIME 300
 
@@ -17,9 +18,10 @@ int main(int argc, char* argv[]) {
 
     char* sourceDir = argv[1];
     char* targetDir = argv[2];
+    checkDirectories(sourceDir, targetDir);
     unsigned int optionalTime;
 
-    // Setting and validating source directory
+    /*// Setting and validating source directory
     struct stat sb1;
     if (stat(sourceDir, &sb1) != 0 || !S_ISDIR(sb1.st_mode)) {
         printf("Katalog źródłowy nie istnieje!\n");
@@ -98,5 +100,5 @@ void Refresh(int signum){
     {
         syslog(LOG_INFO, "Directory refreshed.");
         // TODO
-    }
+    }*/
 }
