@@ -99,7 +99,7 @@ void removeDirOrFile(char *path, mode_t mode)
     }
 }
 
-void copyFileOrCreateDir(char* source_path, char* target_path, struct stat source, unsigned char pathDoesNotExists)
+void copyDirOrFile(char* source_path, char* target_path, struct stat source, unsigned char pathDoesNotExists)
 {
     if (S_ISREG(source.st_mode))
     {
@@ -165,18 +165,18 @@ void checkDirectories(char *source_path, char *target_path)
             checkErrorsFile(err, "Couldn't read target file stats.", targetf_path);
             if (source_f.st_mode == target_f.st_mode)
             {
-                copyFileOrCreateDir(sourcef_path, targetf_path, source_f, 0);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, 0);
             }
             else
             {
                 removeDirOrFile(targetf_path, target_f.st_mode);
-                copyFileOrCreateDir(sourcef_path, targetf_path, source_f, 1);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, 1);
             }
             target_dir.file_list = removeNode(target_dir.file_list, fileName);
         }
         else
         {
-            copyFileOrCreateDir(sourcef_path, targetf_path, source_f, 1);
+            copyDirOrFile(sourcef_path, targetf_path, source_f, 1);
         }
         modify_time.actime = source_f.st_atime;
         modify_time.modtime = source_f.st_mtime;
