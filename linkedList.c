@@ -44,10 +44,10 @@ int search(node* head, char* fileName)
     node *tmp = head;
     while(tmp)
     {
-        if(strcmp(fileName, tmp->fileName) == 0) return 0;
+        if(strcmp(fileName, tmp->fileName) == 0) return 1;
         tmp = tmp->next;
     }
-    return -1;
+    return 0;
 }
 
 node* removeNode(node* head, char* fileName)
