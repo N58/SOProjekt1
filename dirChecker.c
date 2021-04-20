@@ -64,6 +64,32 @@ void clearDirectory(char *path)
     fixDirectorySyntax(dirf_path, &dirf_len);
 
     populateFileList(&dir);
+
+    printNodes(dir.file_list);
+
+    while (dir.file_list)
+    {
+        strncpy(dirf_path + dirf_len, dir.file_list->fileName, sizeof(dirf_path) - dirf_len);
+        printf("%s", dirf_path);
+        err = lstat(dirf_path, &s);
+        checkErrorsFile(err, "Couldn't read target file stats.", dirf_path);
+        removeDirOrFile(dirf_path, s.st_mode);
+        dir.file_list = pop(dir.file_list);
+    }
+}
+
+/*void clearDirectory(char *path)
+{
+    directory dir;
+    struct stat s;
+    dir.path = path;
+    char dirf_path[PATH_MAX + 1];
+    dir.pointer = opendir(dir.path);
+    strcpy(dirf_path, dir.path);
+    size_t dirf_len = strlen(dir.path);
+    fixDirectorySyntax(dirf_path, &dirf_len);
+
+    populateFileList(&dir);
     while (dir.file_list)
     {
         strncpy(dirf_path + dirf_len, dir.file_list->fileName, sizeof(dirf_path) - dirf_len);
@@ -71,7 +97,7 @@ void clearDirectory(char *path)
         checkErrorsFile(err, "Couldn't read target file stats.", dirf_path);
         removeDirOrFile(dirf_path, s.st_mode);
     }
-}
+}*/
 
 void removeDirOrFile(char *path, mode_t mode)
 {
@@ -151,7 +177,7 @@ void checkDirectories(char *source_path, char *target_path)
                     removeDirOrFile(targetf_path, target_f.st_mode);
                     copy(sourcef_path, targetf_path, source_f.st_mode, source_f.st_size);
                 }
-                source_dir.file_list = pop(source_dir.file_list);
+                target_dir.file_list = removeNode(target_dir.file_list, fileName);
             }
             else
             {
@@ -180,7 +206,7 @@ void checkDirectories(char *source_path, char *target_path)
                     checkErrorsFile(err, "Couldn't make directory.", targetf_path);
                     checkDirectories(sourcef_path, targetf_path);
                 }
-                source_dir.file_list = pop(source_dir.file_list);
+                target_dir.file_list = removeNode(target_dir.file_list, fileName);
             }
             else
             {
