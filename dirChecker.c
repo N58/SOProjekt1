@@ -24,6 +24,8 @@ void checkDirectories(char *source_path, char *target_path);
 
 int err = 0;
 
+
+//opis folderu
 typedef struct directory
 {
     char *path;
@@ -31,6 +33,8 @@ typedef struct directory
     node *file_list;
 } directory;
 
+
+//stwórz listę plików w folderze
 void populateFileList(directory *dir)
 {
     struct dirent *entry;
@@ -54,6 +58,7 @@ void populateFileList(directory *dir)
     }
 }
 
+//wyczyść zawartość folderu
 void clearDirectory(char *path)
 {
     directory dir;
