@@ -9,37 +9,40 @@
 #include <string.h>
 #include <signal.h>
 #include "dirChecker.h"
-
-#define DEFAULT_TIME 300
+#include "utils.h"
 
 void Refresh(int signum);
 
 int main(int argc, char* argv[]) {
+    
+    // Checking if there are at least 2 arguments
+    if(argc < 3) {
+        printf("This program requires 2 arguments. '%s [sourceDirectory] [targetDirectory] [time:optional]'", argv[0]);
+        exit(EXIT_FAILURE);
+    }
 
     char* sourceDir = argv[1];
     char* targetDir = argv[2];
     checkDirectories(sourceDir, targetDir);
-    unsigned int optionalTime;
 
+    
     /*// Setting and validating source directory
     struct stat sb1;
     if (stat(sourceDir, &sb1) != 0 || !S_ISDIR(sb1.st_mode)) {
-        printf("Katalog źródłowy nie istnieje!\n");
+        printf("No such source directory.\n");
         exit(EXIT_FAILURE);
     }
 
     // Setting and validating target directory
     struct stat sb2;
     if (stat(targetDir, &sb2) != 0 || !S_ISDIR(sb2.st_mode)) {
-        printf("Katalog docelowy nie istnieje!\n");
+        printf("No such target directory.\n");
         exit(EXIT_FAILURE);
     }
     
     // Setting and validating optional time in seconds
-    if(argv[3] == NULL)
-        optionalTime = DEFAULT_TIME;
-    else if( (int)atoi(argv[3]) < 1) {
-        printf("Podano nieprawidlowy opcjonalny czas!\n");
+    if((int)atoi(argv[3]) < 1 && argv[3] != NULL) {
+        printf("Incorrect optional time!\n");
         exit(EXIT_FAILURE);
     }
     else
@@ -47,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     // Setting up handler
     if(signal(SIGUSR1, Refresh) == SIG_ERR) {
-        printf("Blad ustawiania handlera: %s\n", strerror(errno));
+        printf("Error while setting handler: %s\n", strerror(errno));
     }
 
     // Our process ID and Session ID 
@@ -56,7 +59,7 @@ int main(int argc, char* argv[]) {
     // Fork off the parent process
     pid = fork();
     if (pid < 0) {
-        syslog(LOG_ERR, "Forking error.");
+        sendLog(LOG_ERR, "Forking error.");
         exit(EXIT_FAILURE);
     }
     // If we got a good PID, then we can exit the parent process.
@@ -69,13 +72,13 @@ int main(int argc, char* argv[]) {
     // Create a new SID for the child process
     sid = setsid();
     if (sid < 0) {
-            syslog(LOG_ERR, "Error while setting up new SID.");
+            sendLog(LOG_ERR, "Error while setting up new SID.");
             exit(EXIT_FAILURE);
     }
     
     // Change the current working directory
     if ((chdir("/")) < 0) {
-            syslog(LOG_ERR, "Error while changing current directory.");
+            sendLog(LOG_ERR, "Error while changing current directory.");
             exit(EXIT_FAILURE);
     }
     
@@ -85,7 +88,7 @@ int main(int argc, char* argv[]) {
     close(STDERR_FILENO);
     
     // Daemon-specific initialization goes here
-    syslog(LOG_INFO, "Daemon started succesfully.");
+    sendLog(LOG_INFO, "Daemon started succesfully.");
 
     while (1) {
         Refresh(SIGUSR1);
@@ -98,7 +101,7 @@ int main(int argc, char* argv[]) {
 void Refresh(int signum){
     if(signum == SIGUSR1)
     {
-        syslog(LOG_INFO, "Directory refreshed.");
+        sendLog(LOG_INFO, "Directory refreshed.");
         // TODO
     }*/
 }

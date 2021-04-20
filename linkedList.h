@@ -1,8 +1,9 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
+#include <dirent.h>
 
 typedef struct node{
-    char fileName[256];
+    char fileName[NAME_MAX + 1];
     struct node *next;
 } node;
 

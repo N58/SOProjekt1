@@ -2,10 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "linkedList.h"
+#include "utils.h"
 
 node* add(node* head, char* fileName)
 {
     node* new = (node *)malloc(sizeof(node));
+    if(new == NULL)
+        checkErrors(-1, "Error allocating memory.");
+
     strcpy(new->fileName, fileName);
     new->next = NULL;
     if(!head)
