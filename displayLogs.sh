@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cat /var/log/syslog | grep projekt
+cat /var/log/syslog | grep -a projekt
 

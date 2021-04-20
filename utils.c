@@ -8,6 +8,7 @@
 // Global variables
 unsigned long optionalSize = 30000000; // ~30MB
 unsigned int optionalTime = 300; // 5 min
+unsigned char recursive = 1;
 
 void fixDirectorySyntax(char* source, size_t* length)
 {

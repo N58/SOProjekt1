@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
         printf("This program requires 2 arguments. '%s [sourceDirectory] [targetDirectory] [time:optional]'", argv[0]);
         exit(EXIT_FAILURE);
     }
-
     char* sourceDir = argv[1];
     char* targetDir = argv[2];
     checkDirectories(sourceDir, targetDir);
