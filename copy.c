@@ -50,5 +50,5 @@ void copy(char* sourceName, char* targetName, mode_t mode, off_t size)
 	if(close(targetFile) == -1)
 		checkErrorsFile(-1, "Error closing target file.", targetName); // Forced uncommon error 
 	
-	sendLog(LOG_INFO, "Successfully copied file.", 0);
+	sendLogFile(LOG_INFO, "Successfully copied file.", sourceName, targetName, 0);
 }

@@ -17,13 +17,52 @@ int main(int argc, char* argv[]) {
     
     // Checking if there are at least 2 arguments
     if(argc < 3) {
-        printf("This program requires 2 arguments. '%s [sourceDirectory] [targetDirectory] [time:optional]'", argv[0]);
+        printf("This program requires 2 arguments. '%s [sourceDirectory] [targetDirectory] [recursive:optional, time:optional, size:optional]'", argv[0]);
         exit(EXIT_FAILURE);
     }
+
     char* sourceDir = argv[1];
     char* targetDir = argv[2];
+    
+    int c;
+    while ((c = getopt(argc, argv, "RT:S:")) != -1)
+    {
+        switch (c)
+        {
+            case 'R': 
+                recursive = 1;
+                break;
+            case 'T':
+                if((int)atoi(optarg) < 1 || optarg == NULL)
+                {
+                    printf("Optional time cannot be lower than 1.");
+                    exit(EXIT_FAILURE);
+                }
+                optionalTime = (int)atoi(optarg);
+                break;
+            case 'S':
+                if((int)atoi(optarg) < 1 || optarg == NULL)
+                {
+                    printf("Optional size cannot be lower than 1.");
+                    exit(EXIT_FAILURE);
+                }
+                optionalSize = (int)atoi(optarg);
+                break;
+            case '?': 
+                if(optopt != 'S' && optopt != 'T')
+                {
+                    printf("Unknown option: %c\n", optopt);
+                    exit(EXIT_FAILURE);
+                }
+                break; 
+            default:
+                continue;
+        }
+    }
+    
+    sendLog(LOG_INFO, "DAEMON WOKE UP.", 0); // do wygodniejszego czytania logow
     checkDirectories(sourceDir, targetDir);
-
+    sendLog(LOG_INFO, "DAEMON FELL ASLEEP.", 0);
     
     /*// Setting and validating source directory
     struct stat sb1;
@@ -38,14 +77,6 @@ int main(int argc, char* argv[]) {
         printf("No such target directory.\n");
         exit(EXIT_FAILURE);
     }
-    
-    // Setting and validating optional time in seconds
-    if((int)atoi(argv[3]) < 1 && argv[3] != NULL) {
-        printf("Incorrect optional time!\n");
-        exit(EXIT_FAILURE);
-    }
-    else
-        optionalTime = (int)atoi(argv[3]);
 
     // Setting up handler
     if(signal(SIGUSR1, Refresh) == SIG_ERR) {

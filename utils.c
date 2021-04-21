@@ -8,7 +8,7 @@
 // Global variables
 unsigned long optionalSize = 30000000; // ~30MB
 unsigned int optionalTime = 300; // 5 min
-unsigned char recursive = 1;
+unsigned char recursive = 0;
 
 void fixDirectorySyntax(char* source, size_t* length)
 {
@@ -22,11 +22,32 @@ void fixDirectorySyntax(char* source, size_t* length)
 void sendLog(int facility_priority, char* message, int sendErrno)
 {
     if(sendErrno)
-        syslog(facility_priority, "%s Error: %s", message, strerror(errno));
+        syslog(facility_priority, "%s Error: %s.", message, strerror(errno));
     else
         syslog(facility_priority, "%s", message);
 
     closelog();
+}
+
+void sendLogFile(int facility_priority, char* message, char* source, char* target, int sendErrno)
+{
+    char msg[255];
+    strcpy(msg, message);
+    if(source != NULL)
+    {
+        strcat(msg, " Source: ");
+        strcat(msg, source);
+        strcat(msg, ".");
+    }
+
+    if(target != NULL)
+    {
+        strcat(msg, " Target: ");
+        strcat(msg, target);
+        strcat(msg, ".");
+    } 
+
+    sendLog(facility_priority, msg, sendErrno);
 }
 
 void checkErrors(int err, char* message)
@@ -61,7 +82,7 @@ void checkErrorsFile(int err, char* message, char* filename)
     }
 }
 
-char* getDirectoryInfo(char* source, char* target)
+/*char* getDirectoryInfo(char* source, char* target)
 {
     char *result = (char*)malloc(sizeof(char) * 255);
     strcpy(result, " Source directory: ");
@@ -70,4 +91,4 @@ char* getDirectoryInfo(char* source, char* target)
     strcat(result, target);
     strcat(result, ".");
     return result;
-}
+}*/

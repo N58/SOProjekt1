@@ -52,10 +52,7 @@ void populateFileList(directory *dir)
             checkErrorsFile(-1, "Can't open directory.", dir->path);
     }
     else
-    {
-        sendLog(LOG_ERR, "Can't open directory.", 0);
-        exit(EXIT_FAILURE);
-    }
+        checkErrorsNoErrno(LOG_ERR, "Can't open directory.");
 }
 
 //wyczyść zawartość folderu
@@ -90,20 +87,23 @@ void removeDirOrFile(char *path, mode_t mode)
     {
         err = unlink(path);
         checkErrorsFile(err, "Can't delete file.", path);
+        sendLogFile(LOG_INFO, "Successfully deleted file.", NULL, path, 0);
     }
     else if (S_ISDIR(mode) && recursive)
     {
         clearDirectory(path);
         err = rmdir(path);
         checkErrorsFile(err, "Can't delete directory.", path);
+        sendLogFile(LOG_INFO, "Successfully deleted directory.", NULL, path, 0);
     }
 }
 
-void copyDirOrFile(char* source_path, char* target_path, struct stat source, unsigned char pathDoesNotExists)
+void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target, unsigned char pathDoesNotExists)
 {
     if (S_ISREG(source.st_mode))
     {
-        copy(source_path, target_path, source.st_mode, source.st_size);
+        if(source.st_mtime > target.st_mtime)
+            copy(source_path, target_path, source.st_mode, source.st_size);
     }
     else if (S_ISDIR(source.st_mode) && recursive)
     {
@@ -111,6 +111,7 @@ void copyDirOrFile(char* source_path, char* target_path, struct stat source, uns
         {
             err = mkdir(target_path, source.st_mode);
             checkErrorsFile(err, "Couldn't make directory.", target_path);
+            sendLogFile(LOG_INFO, "Successfully created directory.", NULL, target_path, 0);
         }
         checkDirectories(source_path, target_path);
     }
@@ -118,7 +119,7 @@ void copyDirOrFile(char* source_path, char* target_path, struct stat source, uns
 
 void checkDirectories(char *source_path, char *target_path)
 {
-    sendLog(LOG_INFO, "Comparing directories...", 0);
+    sendLogFile(LOG_INFO, "Comparing directories.", source_path, target_path, 0);
 
     directory source_dir;
     directory target_dir;
@@ -165,18 +166,18 @@ void checkDirectories(char *source_path, char *target_path)
             checkErrorsFile(err, "Couldn't read target file stats.", targetf_path);
             if (source_f.st_mode == target_f.st_mode)
             {
-                copyDirOrFile(sourcef_path, targetf_path, source_f, 0);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 0);
             }
             else
             {
                 removeDirOrFile(targetf_path, target_f.st_mode);
-                copyDirOrFile(sourcef_path, targetf_path, source_f, 1);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
             }
             target_dir.file_list = removeNode(target_dir.file_list, fileName);
         }
         else
         {
-            copyDirOrFile(sourcef_path, targetf_path, source_f, 1);
+            copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
         }
         modify_time.actime = source_f.st_atime;
         modify_time.modtime = source_f.st_mtime;
@@ -194,8 +195,9 @@ void checkDirectories(char *source_path, char *target_path)
             checkErrorsFile(err, "Couldn't read target file stats.", targetf_path);
             // tu trzeba sprawdzic czy plik w target dir to katalog czy plik
             removeDirOrFile(targetf_path, target_f.st_mode);
-            sendLog(LOG_INFO, "Successfully deleted file.", 0);
         }
         target_dir.file_list = pop(target_dir.file_list);
     }
+    
+    sendLogFile(LOG_INFO, "Finished comparing directories.", source_path, target_path, 0);
 }
