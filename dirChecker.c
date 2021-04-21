@@ -18,12 +18,12 @@
 void clearDirectory(char *path);
 void removeDirOrFile(char *path, mode_t mode);
 void checkDirectories(char *source_path, char *target_path);
+void modifyTime(struct utimbuf modify_time, struct stat source_f, char* targetf_path);
 
 // "source file" - file inside of source directory
 // "target file" - file inside of target directory
 
 int err = 0;
-
 
 //opis folderu
 typedef struct directory
@@ -91,30 +91,58 @@ void removeDirOrFile(char *path, mode_t mode)
     }
     else if (S_ISDIR(mode) && recursive)
     {
-        clearDirectory(path);
-        err = rmdir(path);
-        checkErrorsFile(err, "Can't delete directory.", path);
-        sendLogFile(LOG_INFO, "Successfully deleted directory.", NULL, path, 0);
+        if(recursive)
+        {
+            clearDirectory(path);
+            err = rmdir(path);
+            checkErrorsFile(err, "Can't delete directory.", path);
+            sendLogFile(LOG_INFO, "Successfully deleted directory.", NULL, path, 0);
+        }
+    }
+    else
+    {
+        sendLogFile(LOG_INFO, "File is not standard file or directory. Cannot remove.", NULL, path, 0);
     }
 }
 
-void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target, unsigned char pathDoesNotExists)
+void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target, struct utimbuf modify_time, unsigned char pathDoesNotExists)
 {
     if (S_ISREG(source.st_mode))
     {
         if(source.st_mtime > target.st_mtime)
-            copy(source_path, target_path, source.st_mode, source.st_size);
-    }
-    else if (S_ISDIR(source.st_mode) && recursive)
-    {
-        if(pathDoesNotExists)
         {
-            err = mkdir(target_path, source.st_mode);
-            checkErrorsFile(err, "Couldn't make directory.", target_path);
-            sendLogFile(LOG_INFO, "Successfully created directory.", NULL, target_path, 0);
+            copy(source_path, target_path, source.st_mode, source.st_size);
+            modifyTime(modify_time, source, target_path);
         }
-        checkDirectories(source_path, target_path);
     }
+    else if (S_ISDIR(source.st_mode))
+    {
+        if(recursive)
+        {
+            if(pathDoesNotExists)
+            {
+                err = mkdir(target_path, source.st_mode);
+                checkErrorsFile(err, "Couldn't make directory.", target_path);
+                sendLogFile(LOG_INFO, "Successfully created directory.", NULL, target_path, 0);
+            }
+            checkDirectories(source_path, target_path);
+
+            modifyTime(modify_time, source, target_path);
+        }
+    }
+    else
+    {
+        sendLogFile(LOG_INFO, "File is not standard file or directory. Cannot copy.", NULL, target_path, 0);
+    }
+}
+
+void modifyTime(struct utimbuf modify_time, struct stat source_f, char* targetf_path)
+{
+    modify_time.actime = source_f.st_atime;
+    modify_time.modtime = source_f.st_mtime;
+    // zaktualizuj czas w target pliku
+    err = utime(targetf_path, &modify_time);
+    checkErrorsFile(err, "Couldn't change last access/modification time.", targetf_path);
 }
 
 void checkDirectories(char *source_path, char *target_path)
@@ -166,24 +194,20 @@ void checkDirectories(char *source_path, char *target_path)
             checkErrorsFile(err, "Couldn't read target file stats.", targetf_path);
             if (source_f.st_mode == target_f.st_mode)
             {
-                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 0);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, modify_time, 0);
             }
             else
             {
                 removeDirOrFile(targetf_path, target_f.st_mode);
-                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, modify_time, 1);
             }
             target_dir.file_list = removeNode(target_dir.file_list, fileName);
         }
         else
         {
-            copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
+            copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, modify_time, 1);
         }
-        modify_time.actime = source_f.st_atime;
-        modify_time.modtime = source_f.st_mtime;
-        // zaktualizuj czas w target pliku
-        err = utime(targetf_path, &modify_time);
-        checkErrorsFile(err, "Couldn't change last access/modification time.", targetf_path);
+
         source_dir.file_list = pop(source_dir.file_list);
     }
     while (target_dir.file_list)

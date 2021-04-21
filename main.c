@@ -11,7 +11,9 @@
 #include "dirChecker.h"
 #include "utils.h"
 
-void Refresh(int signum);
+void Refresh();
+char* sourceDir;
+char* targetDir;
 
 int main(int argc, char* argv[]) {
     
@@ -21,8 +23,8 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    char* sourceDir = argv[1];
-    char* targetDir = argv[2];
+    sourceDir = argv[1];
+    targetDir = argv[2];
     
     int c;
     while ((c = getopt(argc, argv, "RT:S:")) != -1)
@@ -60,11 +62,7 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    sendLog(LOG_INFO, "DAEMON WOKE UP.", 0); // do wygodniejszego czytania logow
-    checkDirectories(sourceDir, targetDir);
-    sendLog(LOG_INFO, "DAEMON FELL ASLEEP.", 0);
-    
-    /*// Setting and validating source directory
+    // Setting and validating source directory
     struct stat sb1;
     if (stat(sourceDir, &sb1) != 0 || !S_ISDIR(sb1.st_mode)) {
         printf("No such source directory.\n");
@@ -89,7 +87,7 @@ int main(int argc, char* argv[]) {
     // Fork off the parent process
     pid = fork();
     if (pid < 0) {
-        sendLog(LOG_ERR, "Forking error.");
+        sendLog(LOG_ERR, "Forking error." , 1);
         exit(EXIT_FAILURE);
     }
     // If we got a good PID, then we can exit the parent process.
@@ -102,13 +100,13 @@ int main(int argc, char* argv[]) {
     // Create a new SID for the child process
     sid = setsid();
     if (sid < 0) {
-            sendLog(LOG_ERR, "Error while setting up new SID.");
+            sendLog(LOG_ERR, "Error while setting up new SID.", 1);
             exit(EXIT_FAILURE);
     }
     
     // Change the current working directory
     if ((chdir("/")) < 0) {
-            sendLog(LOG_ERR, "Error while changing current directory.");
+            sendLog(LOG_ERR, "Error while changing current directory.", 1);
             exit(EXIT_FAILURE);
     }
     
@@ -118,20 +116,18 @@ int main(int argc, char* argv[]) {
     close(STDERR_FILENO);
     
     // Daemon-specific initialization goes here
-    sendLog(LOG_INFO, "Daemon started succesfully.");
+    sendLogFile(LOG_INFO, "Daemon started succesfully.", sourceDir, targetDir, 0);
 
     while (1) {
-        Refresh(SIGUSR1);
+        Refresh();
         sleep(optionalTime);
     }
    exit(EXIT_SUCCESS);
 }
 
 // Refresh handler (SIGUSR1 runs on "kill -10 <pid>")
-void Refresh(int signum){
-    if(signum == SIGUSR1)
-    {
-        sendLog(LOG_INFO, "Directory refreshed.");
-        // TODO
-    }*/
+void Refresh(){
+    sendLog(LOG_INFO, "DAEMON WOKE UP.", 0);
+    checkDirectories(sourceDir, targetDir);
+    sendLog(LOG_INFO, "DAEMON FELL ASLEEP.", 0);
 }
