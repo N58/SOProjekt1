@@ -72,12 +72,3 @@ node* removeNode(node* head, char* fileName)
     }
     return head;
 }
-
-void printNodes(node* head)
-{
-    while(head)
-    {
-        printf("%s\n", head->fileName);
-        head = head->next;
-    }
-}
