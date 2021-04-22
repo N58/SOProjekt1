@@ -18,7 +18,7 @@
 void clearDirectory(char *path);
 void removeDirOrFile(char *path, mode_t mode);
 void checkDirectories(char *source_path, char *target_path);
-void modifyTime(struct utimbuf modify_time, struct stat source_f, char* targetf_path);
+void modifyTime(struct stat source_f, char* targetf_path);
 
 // "source file" - file inside of source directory
 // "target file" - file inside of target directory
@@ -105,14 +105,14 @@ void removeDirOrFile(char *path, mode_t mode)
     }
 }
 
-void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target, struct utimbuf modify_time, unsigned char pathDoesNotExists)
+void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target, unsigned char pathDoesNotExists)
 {
     if (S_ISREG(source.st_mode))
     {
         if(source.st_mtime > target.st_mtime)
         {
             copy(source_path, target_path, source.st_mode, source.st_size);
-            modifyTime(modify_time, source, target_path);
+            modifyTime(source, target_path);
         }
     }
     else if (S_ISDIR(source.st_mode))
@@ -127,7 +127,7 @@ void copyDirOrFile(char* source_path, char* target_path, struct stat source, str
             }
             checkDirectories(source_path, target_path);
 
-            modifyTime(modify_time, source, target_path);
+            modifyTime(source, target_path);
         }
     }
     else
@@ -136,8 +136,9 @@ void copyDirOrFile(char* source_path, char* target_path, struct stat source, str
     }
 }
 
-void modifyTime(struct utimbuf modify_time, struct stat source_f, char* targetf_path)
+void modifyTime(struct stat source_f, char* targetf_path)
 {
+    struct utimbuf modify_time;
     modify_time.actime = source_f.st_atime;
     modify_time.modtime = source_f.st_mtime;
     // zaktualizuj czas w target pliku
@@ -156,7 +157,6 @@ void checkDirectories(char *source_path, char *target_path)
     struct dirent *entry;
     struct stat source_f, target_f;
     char *fileName;
-    struct utimbuf modify_time;
 
     source_dir.path = source_path;
     target_dir.path = target_path;
@@ -194,18 +194,18 @@ void checkDirectories(char *source_path, char *target_path)
             checkErrorsFile(err, "Couldn't read target file stats.", targetf_path);
             if (source_f.st_mode == target_f.st_mode)
             {
-                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, modify_time, 0);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 0);
             }
             else
             {
                 removeDirOrFile(targetf_path, target_f.st_mode);
-                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, modify_time, 1);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
             }
             target_dir.file_list = removeNode(target_dir.file_list, fileName);
         }
         else
         {
-            copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, modify_time, 1);
+            copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
         }
 
         source_dir.file_list = pop(source_dir.file_list);
