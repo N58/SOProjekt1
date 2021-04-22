@@ -11,6 +11,5 @@ node* add(node* head, char* fileName);
 node* pop(node* head);
 int search(node* head, char* fileName);
 node* removeNode(node* head, char* fileName);
-void printNodes(node* head);
 
 #endif
