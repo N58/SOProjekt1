@@ -105,7 +105,7 @@ void removeDirOrFile(char *path, mode_t mode)
     }
 }
 
-void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target, unsigned char pathDoesNotExists)
+void copyDirOrFile(char* source_path, char* target_path, struct stat source, struct stat target)
 {
     if (S_ISREG(source.st_mode))
     {
@@ -119,7 +119,7 @@ void copyDirOrFile(char* source_path, char* target_path, struct stat source, str
     {
         if(recursive)
         {
-            if(pathDoesNotExists)
+            if(!target)
             {
                 err = mkdir(target_path, source.st_mode);
                 checkErrorsFile(err, "Couldn't make directory.", target_path);
@@ -194,18 +194,18 @@ void checkDirectories(char *source_path, char *target_path)
             checkErrorsFile(err, "Couldn't read target file stats.", targetf_path);
             if (source_f.st_mode == target_f.st_mode)
             {
-                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 0);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f);
             }
             else
             {
                 removeDirOrFile(targetf_path, target_f.st_mode);
-                copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
+                copyDirOrFile(sourcef_path, targetf_path, source_f, NULL);
             }
             target_dir.file_list = removeNode(target_dir.file_list, fileName);
         }
         else
         {
-            copyDirOrFile(sourcef_path, targetf_path, source_f, target_f, 1);
+            copyDirOrFile(sourcef_path, targetf_path, source_f, NULL);
         }
 
         source_dir.file_list = pop(source_dir.file_list);
