@@ -81,14 +81,3 @@ void checkErrorsFile(int err, char* message, char* filename)
         exit(EXIT_FAILURE);
     }
 }
-
-/*char* getDirectoryInfo(char* source, char* target)
-{
-    char *result = (char*)malloc(sizeof(char) * 255);
-    strcpy(result, " Source directory: ");
-    strcat(result, source);
-    strcat(result, ". Target directory: ");
-    strcat(result, target);
-    strcat(result, ".");
-    return result;
-}*/
