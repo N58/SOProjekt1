@@ -89,7 +89,7 @@ void removeDirOrFile(char *path, mode_t mode)
         checkErrorsFile(err, "Can't delete file.", path);
         sendLogFile(LOG_INFO, "Successfully deleted file.", NULL, path, 0);
     }
-    else if (S_ISDIR(mode) && recursive)
+    else if (S_ISDIR(mode))
     {
         if(recursive)
         {
