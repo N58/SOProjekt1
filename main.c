@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     
     // Checking if there are at least 2 arguments
     if(argc < 3) {
-        printf("This program requires 2 arguments. '%s [sourceDirectory] [targetDirectory] [recursive:optional, time:optional, size:optional]'", argv[0]);
+        printf("This program requires 2 arguments. '%s [sourceDirectory] [targetDirectory] [recursive:optional, time:optional, size:optional]'\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -37,15 +37,15 @@ int main(int argc, char* argv[]) {
             case 'T':
                 if((int)atoi(optarg) < 1 || optarg == NULL)
                 {
-                    printf("Optional time cannot be lower than 1.");
+                    printf("Optional time cannot be lower than 1.\n");
                     exit(EXIT_FAILURE);
                 }
                 optionalTime = (int)atoi(optarg);
                 break;
             case 'S':
-                if((int)atoi(optarg) < 1 || optarg == NULL)
+                if((int)atoi(optarg) < 0 || optarg == NULL)
                 {
-                    printf("Optional size cannot be lower than 1.");
+                    printf("Optional size cannot be lower than 1.\n");
                     exit(EXIT_FAILURE);
                 }
                 optionalSize = (int)atoi(optarg);
